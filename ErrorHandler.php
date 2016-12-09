@@ -50,7 +50,7 @@ final class ErrorHandler
     );
 
     /**
-     * ManipuladorErro::__construct
+     * ErrorHandler::__construct
      * 
      * Impede com que o objeto seja instanciado
      * 
@@ -62,7 +62,7 @@ final class ErrorHandler
     }
 
     /**
-     * ManipuladorErro::__clone
+     * ErrorHandler::__clone
      * 
      * Impede que a classe Requisição seja clonada
      *
@@ -76,7 +76,7 @@ final class ErrorHandler
     }
 
     /**
-     * ManipuladorErro::__wakeup
+     * ErrorHandler::__wakeup
      * 
      * Impede que a classe Requisição execute __wakeup
      *
@@ -90,7 +90,7 @@ final class ErrorHandler
     }
 
     /**
-     * ManipuladorErro::getInstance
+     * ErrorHandler::getInstance
      * 
      * Retorna uma instância única de uma classe.
      *
@@ -110,7 +110,7 @@ final class ErrorHandler
     }
 
     /**
-     * ManipuladorErro::setExecutionError
+     * ErrorHandler::setExecutionError
      * 
      * Dispara uma exceção caso algum erro em tempo de execução ocorra
      * 
@@ -134,7 +134,7 @@ final class ErrorHandler
     }
 
     /**
-     * ManipuladorErro::setError
+     * ErrorHandler::setError
      * 
      * Dispara uma exceção caso algum erro em tempo de execução ocorra
      * 
@@ -153,7 +153,7 @@ final class ErrorHandler
     }
 
     /**
-     * ManipuladorErro::getErrorDescription
+     * ErrorHandler::getErrorDescription
      * 
      * Método que retorna uma descrição do erro gerado pelo PHP
      * 
