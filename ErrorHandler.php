@@ -23,7 +23,7 @@ final class ErrorHandler
      * 
      * @var string
      */
-    private $template = '<b>%s</b><br /> <b>Arquivo: </b>%s <br /> <b>Linha do arquivo:</b> %s<br /> <b>Tipo de erro:</b> %s <br /> <b>Versão do PHP:</b> ' . PHP_VERSION;
+    private $template = '<b>%s</b><br /> <b>Arquivo: </b>%s <br /> <b>Linha do arquivo:</b> %s<br /> <b>Tipo de erro:</b> %s <br /> <b>Versão do PHP:</b> %s';
 
     /**
      * Lista com tipos de erros do PHP
@@ -128,7 +128,7 @@ final class ErrorHandler
     public function setExecutionError($errorLevel, $messageErro, $fileName, $fileLine, array $contextError) 
     {
         $formatedMessage = sprintf($this->template, $messageErro, $fileName, $fileLine, 
-            $this->getErrorDescription($errorLevel));
+            $this->getErrorDescription($errorLevel), PHP_VERSION);
         
         throw new Exception($formatedMessage);
     }
@@ -146,7 +146,7 @@ final class ErrorHandler
         $error = error_get_last();
         if (is_array($error)) {
             $formatedMessage = sprintf($this->template, $error['message'], 
-                $error['file'], $error['line'], $this->getErrorDescription($error['type']));
+                $error['file'], $error['line'], $this->getErrorDescription($error['type']), PHP_VERSION);
             
             throw new Exception($formatedMessage, false);
         }
