@@ -1,4 +1,4 @@
-## ErrorHandler 1.0.1
+## ErrorHandler
 
 Classe que intercepta todos os erros lançados pelo PHP e os transforma em uma exceção
 
@@ -19,7 +19,7 @@ Observação: Caso não queira utilizar a classe Excepion, deve-se criar sua pr�
 ```sh
     "require": {
         ...
-        "tayron/error-handler" : "1.0.1"
+        "tayron/error-handler" : "dev-master"
         ... 
     },    
 ```
