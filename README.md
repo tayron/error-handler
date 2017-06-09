@@ -19,7 +19,7 @@ Observação: Caso não queira utilizar a classe Excepion, deve-se criar sua pr�
 ```sh
     "require": {
         ...
-        "tayron/error-handler" : "dev-master"
+        "tayron/error-handler" : "1.0.0"
         ... 
     },    
 ```
