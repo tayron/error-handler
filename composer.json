@@ -1,7 +1,7 @@
 {
     "name": "tayron/error-handler",
     "description": "Classe que intercepta todos os erros lançados pelo PHP e os transforma em uma exceção",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "type": "classe-utilitaria",
     "homepage": "https://github.com/tayron/error-handler",
     "authors": [
