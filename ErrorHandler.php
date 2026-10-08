@@ -1,167 +1,229 @@
+```php
 <?php
+
+declare(strict_types=1);
 
 namespace Tayron;
 
 use Tayron\exceptions\Exception;
 
 /**
- * Classe que intercepta todos os erros lançados pelo PHP e os transforma em uma exceção
+ * Centraliza o tratamento de erros da aplicação.
  *
- * @author Tayron Miranda <dev@tayron.com.br>
+ * Converte erros de execução tratáveis em exceções e
+ * identifica erros fatais ocorridos durante o shutdown.
  */
-final class ErrorHandler 
+final class ErrorHandler
 {
-    /**
-     * Armazena instancia de ErrorHandler
-     * 
-     * @var ErrorHandler
-     */
-    private static $instance;
+    private static ?self $instance = null;
 
     /**
-     * Template da mensagem de erro
-     * 
-     * @var string
+     * Template padrão da mensagem de erro.
      */
-    private $template = '<b>%s</b><br /> <b>Arquivo: </b>%s <br /> <b>Linha do arquivo:</b> %s<br /> <b>Tipo de erro:</b> %s <br /> <b>Versão do PHP:</b> %s';
+    private const ERROR_TEMPLATE =
+        '<b>%s</b><br>' .
+        '<b>Arquivo:</b> %s<br>' .
+        '<b>Linha:</b> %s<br>' .
+        '<b>Tipo de erro:</b> %s<br>' .
+        '<b>Versão do PHP:</b> %s';
 
     /**
-     * Lista com tipos de erros do PHP
-     * @see http://php.net/manual/en/errorfunc.constants.php
-     * 
-     * @var array
+     * Descrições dos principais tipos de erro do PHP.
      */
-    private $errorList = array(
-        E_ERROR => 'E_ERROR: Erros fatais em tempo de execução. Estes indicam erros que não podem ser recuperados, como problemas de alocação de memória. A execução do script é interrompida',
-        E_RECOVERABLE_ERROR => 'E_RECOVERABLE_ERROR: Indica que um erro provavelmente perigoso aconteceu, mas não deixou o Engine em um estado instáve',
-        E_WARNING => 'E_WARNING: Avisos em tempo de execução (erros não fatais)',
-        E_PARSE => 'E_PARSE : Erro em tempo de compilação. Erros gerados pelo interpretador',
-        E_NOTICE => 'E_NOTICE: Notícia em tempo de execução. Indica que o script encontrou alguma coisa que pode indicar um erro, mas que também possa acontecer durante a execução normal do script',
-        E_STRICT => 'E_STRICT: Notícias em tempo de execução. Permite ao PHP sugerir mudanças ao seu código as quais irão assegurar melhor interoperabilidade e compatibilidade futura do seu código',
-        E_DEPRECATED => 'E_DEPRECATED: Avisos em tempo de execução. Habilite-o para receber avisos sobre código que não funcionará em futuras versões',
-        E_CORE_ERROR => 'E_CORE_ERROR: Erro fatal que acontece durante a inicialização do PHP. Este é parecido com E_ERROR, exceto que é gerado pelo núcleo do PHP',
-        E_CORE_WARNING => 'E_CORE_WARNING: Avisos (erros não fatais) que aconteçam durante a inicialização do PHP. Este é parecido com E_WARNING, exceto que é gerado pelo núcleo do PHP',
-        E_COMPILE_ERROR => 'E_COMPILE_ERROR: Erro fatal em tempo de compilação. Este é parecido com E_ERROR, exceto que é gerado pelo Zend Scripting Engine',
-        E_COMPILE_WARNING => 'E_COMPILE_WARNING: Aviso em tempo de compilação. Este é parecido com E_WARNING, exceto que é geredo pelo Zend Scripting Engine',
-        E_USER_ERROR => 'E_USER_ERROR: Erro gerado pelo usuário. Este é parecido com E_ERROR, exceto que é gerado pelo código PHP usando a função trigger_error()',
-        E_USER_WARNING => 'E_USER_WARNING: Aviso gerado pelo usuário. Este é parecido com E_WARNING, exceto que é gerado pelo código PHP usando a função trigger_error()',
-        E_USER_NOTICE => 'E_USER_NOTICE: Notícia gerada pelo usuário. Este é parecido com E_NOTICE, exceto que é gerado pelo código PHP usando a função trigger_error()',
-        E_USER_DEPRECATED => 'E_USER_DEPRECATED: Mensagem de aviso gerado pelo usuário. Este é como um E_DEPRECATED, exceto que é gerado em código PHP usando a função trigger_error()'
-    );
+    private const ERROR_TYPES = [
+        E_ERROR => 'Erro fatal em tempo de execução.',
+        E_WARNING => 'Aviso em tempo de execução.',
+        E_PARSE => 'Erro de análise/sintaxe.',
+        E_NOTICE => 'Aviso sobre possível problema durante a execução.',
+        E_CORE_ERROR => 'Erro fatal durante a inicialização do PHP.',
+        E_CORE_WARNING => 'Aviso durante a inicialização do PHP.',
+        E_COMPILE_ERROR => 'Erro fatal durante a compilação.',
+        E_COMPILE_WARNING => 'Aviso durante a compilação.',
+        E_USER_ERROR => 'Erro gerado pela aplicação.',
+        E_USER_WARNING => 'Aviso gerado pela aplicação.',
+        E_USER_NOTICE => 'Aviso gerado pela aplicação.',
+        E_RECOVERABLE_ERROR => 'Erro recuperável durante a execução.',
+        E_DEPRECATED => 'Recurso ou comportamento obsoleto.',
+        E_USER_DEPRECATED => 'Recurso ou comportamento obsoleto gerado pela aplicação.',
+    ];
 
     /**
-     * ErrorHandler::__construct
-     * 
-     * Impede com que o objeto seja instanciado
-     * 
-     * @return void
+     * Impede instanciação externa.
      */
-    final private function __construct() 
+    private function __construct()
     {
-        
     }
 
     /**
-     * ErrorHandler::__clone
-     * 
-     * Impede que a classe Requisição seja clonada
+     * Impede clonagem da instância.
      *
-     * @throws Exception Lança execção caso o usuário tente clonar este classe
-     *
-     * @return void
+     * @throws Exception
      */
-    final public function __clone() 
+    private function __clone(): void
     {
-        throw new Exception('A classe Erro não pode ser clonada.');
+        throw new Exception(
+            'A classe ErrorHandler não pode ser clonada.'
+        );
     }
 
     /**
-     * ErrorHandler::__wakeup
-     * 
-     * Impede que a classe Requisição execute __wakeup
+     * Impede desserialização da instância.
      *
-     * @throws Exception Lança execção caso o usuário tente executar este método
-     *
-     * @return void
+     * @throws Exception
      */
-    final public function __wakeup() 
+    public function __wakeup(): void
     {
-        throw new Exception('A classe Erro não pode executar __wakeup.');
+        throw new Exception(
+            'A classe ErrorHandler não pode ser desserializada.'
+        );
     }
 
     /**
-     * ErrorHandler::getInstance
-     * 
-     * Retorna uma instância única de uma classe.
-     *
-     * @return ErrorHandler Retorna instancia única de ErrorHandler
+     * Retorna a instância única do ErrorHandler.
      */
-    public static function getInstance() 
+    public static function getInstance(): self
     {
-        if (!static::$instance) {
-            static::$instance = new static();
+        if (self::$instance === null) {
+            self::$instance = new self();
+            self::$instance->register();
         }
-
-        error_reporting(0);
-        set_error_handler(array(self::$instance, 'setExecutionError'));
-        register_shutdown_function(array(self::$instance, 'setError'));
 
         return self::$instance;
     }
 
     /**
-     * ErrorHandler::setExecutionError
-     * 
-     * Dispara uma exceção caso algum erro em tempo de execução ocorra
-     * 
-     * @link http://php.net/manual/pt_BR/function.set-error-handler.php
-     * 
-     * @param int $errorLevel Contém o nível de erro que aconteceu, como um inteiro. 
-     * @param string $formatedMessage Contém a mensagem de erro, como uma string. 
-     * @param string $fileName Contém o nome do arquivo no qual o erro ocorreu, como uma string. 
-     * @param int $fileLine Contém o número da linha na qual o erro ocorreu, como um inteiro. 
-     * @param array $contextError Conter uma matriz de cada váriavel que exista no escopo aonde o erro aconteceu.
-     * 
-     * @throws Exception Objeto responsável por tratar a exceção da aplicalção
-     * @return void
+     * Registra os mecanismos de tratamento de erros.
      */
-    public function setExecutionError($errorLevel, $messageErro, $fileName, $fileLine, array $contextError) 
+    private function register(): void
     {
-        $formatedMessage = sprintf($this->template, $messageErro, $fileName, $fileLine, 
-            $this->getErrorDescription($errorLevel), PHP_VERSION);
-        
-        throw new Exception($formatedMessage);
+        set_error_handler(
+            [$this, 'handleError'],
+            E_ALL
+        );
+
+        register_shutdown_function(
+            [$this, 'handleShutdown']
+        );
     }
 
     /**
-     * ErrorHandler::setError
-     * 
-     * Dispara uma exceção caso algum erro em tempo de execução ocorra
-     * 
-     * @throws Exception Objeto responsável por tratar a exceção da aplicalção
-     * @return void
+     * Trata erros de execução convertendo-os em exceções.
+     *
+     * @throws Exception
      */
-    public function setError() 
+    public function handleError(
+        int $errorLevel,
+        string $message,
+        string $file,
+        int $line
+    ): bool {
+        if (!$this->shouldHandle($errorLevel)) {
+            return false;
+        }
+
+        $errorMessage = $this->formatError(
+            $message,
+            $file,
+            $line,
+            $errorLevel
+        );
+
+        throw new Exception($errorMessage);
+    }
+
+    /**
+     * Trata erros fatais durante o encerramento do script.
+     */
+    public function handleShutdown(): void
     {
         $error = error_get_last();
-        if (is_array($error)) {
-            $formatedMessage = sprintf($this->template, $error['message'], 
-                $error['file'], $error['line'], $this->getErrorDescription($error['type']), PHP_VERSION);
-            
-            throw new Exception($formatedMessage, false);
+
+        if ($error === null) {
+            return;
         }
+
+        if (!$this->isFatalError($error['type'])) {
+            return;
+        }
+
+        $message = $this->formatError(
+            $error['message'],
+            $error['file'],
+            $error['line'],
+            $error['type']
+        );
+
+        /*
+         * Nesse ponto não devemos depender de throw,
+         * pois o PHP já está encerrando a execução.
+         */
+        error_log(strip_tags($message));
     }
 
     /**
-     * ErrorHandler::getErrorDescription
-     * 
-     * Método que retorna uma descrição do erro gerado pelo PHP
-     * 
-     * @param int $errorLevel Código do erro informado pelo PHP
-     * @return string com descrição do erro gerado pelo PHP
+     * Verifica se o tipo de erro deve ser tratado.
      */
-    public function getErrorDescription($errorLevel) 
+    private function shouldHandle(int $errorLevel): bool
     {
-        return (isset($this->errorList[$errorLevel])) ? $this->errorList[$errorLevel] : $errorLevel;
+        return in_array(
+            $errorLevel,
+            [
+                E_WARNING,
+                E_NOTICE,
+                E_USER_ERROR,
+                E_USER_WARNING,
+                E_USER_NOTICE,
+                E_RECOVERABLE_ERROR,
+                E_DEPRECATED,
+                E_USER_DEPRECATED,
+            ],
+            true
+        );
+    }
+
+    /**
+     * Verifica se o erro é fatal.
+     */
+    private function isFatalError(int $errorLevel): bool
+    {
+        return in_array(
+            $errorLevel,
+            [
+                E_ERROR,
+                E_PARSE,
+                E_CORE_ERROR,
+                E_COMPILE_ERROR,
+            ],
+            true
+        );
+    }
+
+    /**
+     * Obtém a descrição do tipo de erro.
+     */
+    public function getErrorDescription(int $errorLevel): string
+    {
+        return self::ERROR_TYPES[$errorLevel]
+            ?? 'Tipo de erro desconhecido.';
+    }
+
+    /**
+     * Formata a mensagem de erro.
+     */
+    private function formatError(
+        string $message,
+        string $file,
+        int $line,
+        int $errorLevel
+    ): string {
+        return sprintf(
+            self::ERROR_TEMPLATE,
+            $message,
+            $file,
+            $line,
+            $this->getErrorDescription($errorLevel),
+            PHP_VERSION
+        );
     }
 }
+```
