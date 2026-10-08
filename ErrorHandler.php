@@ -1,4 +1,3 @@
-```php
 <?php
 
 declare(strict_types=1);
@@ -96,6 +95,8 @@ final class ErrorHandler
      */
     private function register(): void
     {
+        error_reporting(E_ALL);
+
         set_error_handler(
             [$this, 'handleError'],
             E_ALL
@@ -153,10 +154,6 @@ final class ErrorHandler
             $error['type']
         );
 
-        /*
-         * Nesse ponto não devemos depender de throw,
-         * pois o PHP já está encerrando a execução.
-         */
         error_log(strip_tags($message));
     }
 
@@ -226,4 +223,3 @@ final class ErrorHandler
         );
     }
 }
-```
