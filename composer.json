@@ -1,22 +1,36 @@
+```json
 {
-  "name": "tayron/error-handler",
-  "description": "Biblioteca para interceptar erros do PHP e convertê-los em exceções.",
-  "type": "library",
-  "license": "MIT",
-  "homepage": "https://github.com/tayron/error-handler",
-  "authors": [
-    {
-      "name": "Tayron Miranda",
-      "email": "dev@tayron.com.br"
+    "name": "tayron/error-handler",
+    "description": "Tratador de erros PHP que converte erros em exceções.",
+    "type": "library",
+    "homepage": "https://github.com/tayron/error-handler",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Tayron Miranda",
+            "email": "dev@tayron.com.br"
+        }
+    ],
+    "require": {
+        "php": ">=8.1",
+        "tayron/exceptions": "^1.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^10.5 || ^11.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Tayron\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tayron\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit",
+        "test-coverage": "phpunit --coverage-text"
     }
-  ],
-  "require": {
-    "php": "^8.0",
-    "tayron/exceptions": "^1.0"
-  },
-  "autoload": {
-    "psr-4": {
-      "Tayron\\": "src/"
-    }
-  }
 }
+```
